@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>BizTimeSheet | Weekly Hours Tracker (Sun–Sat)</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            font-family: system-ui, 'Segoe UI', 'Inter', 'Roboto', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(145deg, #e9f0fc 0%, #d9e3f0 100%);
+            min-height: 100vh;
+            padding: 2rem 1.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* main card */
+        .timesheet-card {
+            max-width: 1300px;
+            width: 100%;
+            background: rgba(255,255,255,0.96);
+            backdrop-filter: blur(0px);
+            border-radius: 2rem;
+            box-shadow: 0 25px 45px -12px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.05);
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+
+        .card-header {
+            background: #0a2b3e;
+            padding: 1.5rem 2rem;
+            color: white;
+        }
+
+        .card-header h1 {
+            font-weight: 700;
+            font-size: 1.9rem;
+            letter-spacing: -0.3px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+
+        .badge-week {
+            background: #ffb347;
+            color: #1e2a32;
+            padding: 0.4rem 1rem;
+            border-radius: 60px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .sub {
+            font-size: 0.9rem;
+            opacity: 0.85;
+            margin-top: 8px;
+            border-left: 3px solid #ffb347;
+            padding-left: 12px;
+        }
+
+        /* employee info row */
+        .employee-panel {
+            background: #fef9e8;
+            padding: 1.2rem 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.2rem;
+            align-items: flex-end;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 180px;
+        }
+
+        .input-group label {
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #2c4c6e;
+        }
+
+        .input-group input, .input-group select {
+            padding: 10px 12px;
+            border-radius: 14px;
+            border: 1px solid #cbd5e1;
+            background: white;
+            font-size: 0.9rem;
+            transition: 0.2s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #0f6b8c;
+            box-shadow: 0 0 0 2px rgba(15,107,140,0.2);
+        }
+
+        /* week grid: sun to sat */
+        .week-grid {
+            padding: 1.8rem 2rem 0.5rem 2rem;
+        }
+
+        .days-container {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .day-card {
+            background: #ffffff;
+            border-radius: 1.2rem;
+            border: 1px solid #e2edf7;
+            box-shadow: 0 5px 12px rgba(0,0,0,0.02);
+            overflow: hidden;
+            transition: 0.1s linear;
+        }
+
+        .day-name {
+            background: #f1f5f9;
+            text-align: center;
+            padding: 12px 6px;
+            font-weight: 700;
+            font-size: 1rem;
+            border-bottom: 1px solid #e0e8f0;
+            color: #1e4762;
+        }
+
+        .day-date {
+            font-size: 0.7rem;
+            font-weight: normal;
+            display: block;
+            color: #4b6f8c;
+        }
+
+        .hours-input-area {
+            padding: 1rem 0.8rem 1rem 0.8rem;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .hours-input-area input {
+            width: 100%;
+            padding: 10px 8px;
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: 500;
+            border: 1px solid #cbdde9;
+            border-radius: 40px;
+            background: #fefefe;
+        }
+
+        .hours-input-area input:focus {
+            border-color: #2c7da0;
+            outline: none;
+            background: #fffef7;
+        }
+
+        .day-total {
+            text-align: center;
+            font-size: 0.8rem;
+            background: #f8fafc;
+            padding: 8px;
+            border-top: 1px solid #e9eff5;
+            font-weight: 600;
+            color: #0f3b4f;
+        }
+
+        /* totals & actions */
+        .summary-section {
+            background: #f8fafd;
+            margin: 0 2rem 1.5rem 2rem;
+            border-radius: 1.5rem;
+            padding: 1.2rem 1.8rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+            border: 1px solid #e9f0f5;
+        }
+
+        .total-hours-box {
+            background: #0a2b3e;
+            padding: 0.7rem 1.4rem;
+            border-radius: 60px;
+            color: white;
+            font-weight: 700;
+            font-size: 1.6rem;
+            letter-spacing: 1px;
+        }
+
+        .total-hours-box span {
+            font-size: 0.9rem;
+            font-weight: normal;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            border: none;
+            padding: 10px 24px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .btn-primary {
+            background: #1f6e8c;
+            color: white;
+            border: none;
+        }
+        .btn-primary:hover {
+            background: #0e556f;
+            transform: scale(0.97);
+        }
+
+        .btn-secondary {
+            background: #eef2f6;
+            border: 1px solid #cbdde9;
+        }
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+        .btn-send {
+            background: #2b7a3e;
+            color: white;
+        }
+        .btn-send:hover {
+            background: #1d5e2e;
+        }
+
+        .email-status {
+            background: #eef2ff;
+            padding: 0.5rem 1.2rem;
+            border-radius: 80px;
+            font-size: 0.8rem;
+            color: #155e75;
+        }
+
+        hr {
+            margin: 0 2rem;
+            border-color: #e2edf7;
+        }
+
+        footer {
+            padding: 1.2rem 2rem;
+            font-size: 0.7rem;
+            text-align: center;
+            color: #5f7f9a;
+            background: #fefefe;
+        }
+
+        @media (max-width: 780px) {
+            .days-container {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.8rem;
+            }
+            .summary-section {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            body {
+                padding: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .days-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button {
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+
+<div class="timesheet-card" id="timesheetApp">
+    <div class="card-header">
+        <h1>
+            📋 TimeSheet Flow
+            <span class="badge-week">Week: Sunday → Saturday</span>
+        </h1>
+        <div class="sub">✔️ Auto-total all hours | ✉️ One-click email report (employee data + weekly totals)</div>
+    </div>
+
+    <!-- employee details -->
+    <div class="employee-panel">
+        <div class="input-group">
+            <label>👤 Employee Name *</label>
+            <input type="text" id="employeeName" placeholder="e.g. Sarah Johnson" value="Alex Morgan">
+        </div>
+        <div class="input-group">
+            <label>📧 Send to Email *</label>
+            <input type="email" id="recipientEmail" placeholder="manager@yourbiz.com" value="timesheet@demo.com">
+        </div>
+        <div class="input-group">
+            <label>📅 Week Starting (Sunday)</label>
+            <input type="date" id="weekStartDate" value="">
+        </div>
+    </div>
+
+    <!-- dynamic days: sun to sat -->
+    <div class="week-grid">
+        <div class="days-container" id="daysContainer"></div>
+    </div>
+
+    <!-- totals + action buttons -->
+    <div class="summary-section">
+        <div class="total-hours-box">
+            <span>🏆 TOTAL WEEK HOURS</span> <span id="grandTotalHours">0.00</span>
+        </div>
+        <div class="action-buttons">
+            <button class="btn btn-secondary" id="resetBtn">⟳ Reset All Hours</button>
+            <button class="btn btn-primary" id="sendEmailBtn">📧 Send Timesheet to Email</button>
+        </div>
+        <div id="emailFeedback" class="email-status">✅ Ready — hours will be submitted via email</div>
+    </div>
+    <hr />
+    <footer>
+        ⏱️ Week runs Sunday → Saturday. Enter daily hours (decimal or whole). Total updates in real-time.<br>
+        ✉️ Email includes employee name, week range, detailed daily hours, and combined total.
+    </footer>
+</div>
+
+<script>
+    // ---------- UTILS ----------
+    // Days definition: Sunday = 0, Monday = 1 ... Saturday = 6
+    const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    
+    // Helper: compute week range from a given Sunday date (YYYY-MM-DD)
+    function getWeekRangeFromSunday(sundayDateObj) {
+        if (!sundayDateObj || isNaN(sundayDateObj.getTime())) {
+            // fallback to current week's Sunday
+            const today = new Date();
+            const currentDay = today.getDay(); // 0 = Sunday
+            const sunday = new Date(today);
+            sunday.setDate(today.getDate() - currentDay);
+            return sunday;
+        }
+        return sundayDateObj;
+    }
+
+    // Format date as "MMM DD" (e.g., "Apr 07")
+    function formatDateShort(date) {
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
+
+    // Format full range string "Sunday, Apr 06 - Saturday, Apr 12, 2025"
+    function getFormattedWeekRange(sundayDate) {
+        if (!sundayDate || isNaN(sundayDate.getTime())) return "Invalid week";
+        const saturday = new Date(sundayDate);
+        saturday.setDate(sundayDate.getDate() + 6);
+        const options = { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' };
+        const sunStr = sundayDate.toLocaleDateString('en-US', options);
+        const satStr = saturday.toLocaleDateString('en-US', options);
+        return `${sunStr} — ${satStr}`;
+    }
+
+    // DOM elements
+    const daysContainer = document.getElementById('daysContainer');
+    const employeeNameInput = document.getElementById('employeeName');
+    const recipientEmailInput = document.getElementById('recipientEmail');
+    const weekStartDateInput = document.getElementById('weekStartDate');
+    const grandTotalSpan = document.getElementById('grandTotalHours');
+    const resetBtn = document.getElementById('resetBtn');
+    const sendEmailBtn = document.getElementById('sendEmailBtn');
+    const emailFeedbackDiv = document.getElementById('emailFeedback');
+
+    // Store references to hour input elements and day totals display
+    let hourInputs = [];      // array of input elements (7 items)
+    let dayTotalSpans = [];   // optional: not needed for total but for possible per-day display update
+    
+    // current week start date (Date object)
+    let currentSundayDate = null;
+
+    // Helper: recalc total from all hour fields (parse float, default 0)
+    function computeTotalHours() {
+        let total = 0;
+        for (let i = 0; i < hourInputs.length; i++) {
+            let val = hourInputs[i].value.trim();
+            let hours = parseFloat(val);
+            if (isNaN(hours)) hours = 0;
+            total += hours;
+        }
+        return total;
+    }
+
+    // Update grand total display and also update each day's inline "Day total: X hrs"
+    function updateAllTotals() {
+        let total = computeTotalHours();
+        grandTotalSpan.innerText = total.toFixed(2);
+        // Also update per-day sub-total texts inside each day-card (for better UX)
+        for (let i = 0; i < hourInputs.length; i++) {
+            let val = hourInputs[i].value.trim();
+            let dayHours = parseFloat(val);
+            if (isNaN(dayHours)) dayHours = 0;
+            const dayCardFooter = document.getElementById(`dayTotalFooter_${i}`);
+            if (dayCardFooter) {
+                dayCardFooter.innerText = `🔹 Day total: ${dayHours.toFixed(2)} hrs`;
+            }
+        }
+    }
+
+    // Event handler for hour inputs
+    function onHourChange() {
+        updateAllTotals();
+    }
+
+    // Reset all hour fields to 0.00
+    function resetAllHours() {
+        for (let i = 0; i < hourInputs.length; i++) {
+            hourInputs[i].value = "0.00";
+        }
+        updateAllTotals();
+        emailFeedbackDiv.innerHTML = "🔄 Hours reset. You can re-enter new values.";
+        setTimeout(() => {
+            if (emailFeedbackDiv.innerHTML.includes("reset")) 
+                emailFeedbackDiv.innerHTML = "✅ Ready — hours will be submitted via email";
+        }, 2000);
+    }
+
+    // Build the UI for all 7 days based on currentSundayDate
+    function rebuildWeekGrid() {
+        if (!currentSundayDate || isNaN(currentSundayDate.getTime())) {
+            // fallback: use current week's Sunday
+            const todayRef = new Date();
+            const fallbackSunday = new Date(todayRef);
+            fallbackSunday.setDate(todayRef.getDate() - todayRef.getDay());
+            currentSundayDate = fallbackSunday;
+        }
+
+        // Set the date picker value to reflect currentSundayDate (YYYY-MM-DD)
+        const year = currentSundayDate.getFullYear();
+        const month = String(currentSundayDate.getMonth() + 1).padStart(2, '0');
+        const day = String(currentSundayDate.getDate()).padStart(2, '0');
+        weekStartDateInput.value = `${year}-${month}-${day}`;
+        
+        // Build HTML for each day (Sunday to Saturday)
+        let daysHtml = '';
+        for (let i = 0; i < 7; i++) {
+            const dayDate = new Date(currentSundayDate);
+            dayDate.setDate(currentSundayDate.getDate() + i);
+            const dayName = DAY_NAMES[i];
+            const dateShort = formatDateShort(dayDate);
+            // generate unique IDs for each input and footer
+            const inputId = `hours_day_${i}`;
+            const footerId = `dayTotalFooter_${i}`;
+            daysHtml += `
+                <div class="day-card">
+                    <div class="day-name">
+                        ${dayName}<span class="day-date"> ${dateShort}</span>
+                    </div>
+                    <div class="hours-input-area">
+                        <input type="number" step="0.25" id="${inputId}" placeholder="0.00" value="0.00">
+                    </div>
+                    <div class="day-total" id="${footerId}">🔹 Day total: 0.00 hrs</div>
+                </div>
+            `;
+        }
+        daysContainer.innerHTML = daysHtml;
+        
+        // Re-attach references to hour inputs and day total spans
+        hourInputs = [];
+        dayTotalSpans = [];
+        for (let i = 0; i < 7; i++) {
+            const inputElem = document.getElementById(`hours_day_${i}`);
+            const footerElem = document.getElementById(`dayTotalFooter_${i}`);
+            if (inputElem) {
+                hourInputs.push(inputElem);
+                inputElem.addEventListener('input', onHourChange);
+                // initial sanitize: ensure numeric default 0
+                if (inputElem.value === "" || isNaN(parseFloat(inputElem.value))) {
+                    inputElem.value = "0.00";
+                }
+            }
+            if (footerElem) dayTotalSpans.push(footerElem);
+        }
+        // initial total update
+        updateAllTotals();
+    }
+
+    // When user manually picks a new Sunday date from datepicker
+    function onWeekStartDateChange() {
+        let dateStr = weekStartDateInput.value;
+        if (!dateStr) return;
+        const selectedDate = new Date(dateStr);
+        if (isNaN(selectedDate.getTime())) return;
+        // We must enforce that the selected day is a Sunday. If not, adjust to previous Sunday.
+        let dayOfWeek = selectedDate.getDay(); // 0 = Sunday
+        if (dayOfWeek !== 0) {
+            // find the previous Sunday
+            const correctedSunday = new Date(selectedDate);
+            correctedSunday.setDate(selectedDate.getDate() - dayOfWeek);
+            currentSundayDate = correctedSunday;
+            emailFeedbackDiv.innerHTML = `⚠️ Adjusted to nearest Sunday: ${currentSundayDate.toDateString()}`;
+            setTimeout(() => {
+                if (emailFeedbackDiv.innerHTML.includes("Adjusted")) 
+                    emailFeedbackDiv.innerHTML = "✅ Ready — hours will be submitted via email";
+            }, 1800);
+        } else {
+            currentSundayDate = selectedDate;
+        }
+        rebuildWeekGrid(); // rebuild with new currentSundayDate
+    }
+    
+    // Initial setup of current week Sunday
+    function initCurrentWeekSunday() {
+        const today = new Date();
+        const todayDay = today.getDay(); // 0 sun
+        const sunday = new Date(today);
+        sunday.setDate(today.getDate() - todayDay);
+        currentSundayDate = sunday;
+        rebuildWeekGrid();
+    }
+
+    // Build email content in a clean, readable format (plain/text and fallback)
+    function buildEmailBody() {
+        const employeeName = employeeNameInput.value.trim();
+        if (!employeeName) {
+            emailFeedbackDiv.innerHTML = "❌ Please enter employee name before sending.";
+            return null;
+        }
+        const recipientEmail = recipientEmailInput.value.trim();
+        if (!recipientEmail || !recipientEmail.includes('@')) {
+            emailFeedbackDiv.innerHTML = "❌ Please enter a valid recipient email address.";
+            return null;
+        }
+        
+        // gather day data with dates
+        if (!currentSundayDate) {
+            emailFeedbackDiv.innerHTML = "⚠️ Week date error, please refresh.";
+            return null;
+        }
+        
+        let dailyEntries = [];
+        let weeklyTotal = 0;
+        for (let i = 0; i < 7; i++) {
+            let dayDate = new Date(currentSundayDate);
+            dayDate.setDate(currentSundayDate.getDate() + i);
+            let dayName = DAY_NAMES[i];
+            let dateStr = dayDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+            let hoursVal = parseFloat(hourInputs[i]?.value);
+            if (isNaN(hoursVal)) hoursVal = 0;
+            weeklyTotal += hoursVal;
+            dailyEntries.push({ day: dayName, date: dateStr, hours: hoursVal });
+        }
+        
+        // Build text table
+        let rowsText = "";
+        for (let entry of dailyEntries) {
+            rowsText += `${entry.day} (${entry.date}): ${entry.hours.toFixed(2)} hrs\n`;
+        }
+        
+        const weekRangeFormatted = getFormattedWeekRange(currentSundayDate);
+        const subject = `TimeSheet Report - ${employeeName} (Week ${weekRangeFormatted})`;
+        const body = `===========================================
+📋 OFFICIAL WEEKLY TIMESHEET
+===========================================
+Employee: ${employeeName}
+Week: ${weekRangeFormatted}
+Week runs: Sunday → Saturday
+-------------------------------------------
+DAILY HOURS BREAKDOWN:
+${rowsText}
+-------------------------------------------
+🏆 TOTAL HOURS (Sun–Sat): ${weeklyTotal.toFixed(2)} hours
+===========================================
+Generated via BizTimeSheet App
+Report sent on: ${new Date().toLocaleString()}
+✅ All hours accounted.`;
+        
+        return { subject, body, recipientEmail, weeklyTotal };
+    }
+    
+    // send email using mailto: protocol (opens default email client)
+    function sendEmailViaMailto() {
+        const emailData = buildEmailBody();
+        if (!emailData) return false;
+        
+        const { subject, body, recipientEmail, weeklyTotal } = emailData;
+        // encode URI components
+        const mailtoLink = `mailto:${encodeURIComponent(recipientEmail)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        
+        // optional: show feedback that it's opening email client
+        emailFeedbackDiv.innerHTML = `📨 Opening email client... Send to ${recipientEmail}. Total: ${weeklyTotal.toFixed(2)} hrs`;
+        setTimeout(() => {
+            emailFeedbackDiv.innerHTML = `✅ Timesheet prepared! If email didn't open, check mail settings.`;
+        }, 3000);
+        
+        // open default email app
+        window.location.href = mailtoLink;
+        return true;
+    }
+    
+    // Alternative: copy to clipboard + alert (robust fallback but we keep main mailto)
+    // Also offer an explicit copy fallback if needed? but the requirement says "must go straight to an email"
+    // mailto is the most straightforward "go straight to email" without backend.
+    // Additionally, we provide a modern approach: user clicks send, mail client opens with prefilled data.
+    
+    // Also add an enhanced "send" with optional feedback and robust validation
+    function handleSendEmail() {
+        const empName = employeeNameInput.value.trim();
+        if (!empName) {
+            emailFeedbackDiv.innerHTML = "⚠️ Please enter employee name before sending.";
+            emailFeedbackDiv.style.background = "#ffe6e6";
+            setTimeout(() => {
+                emailFeedbackDiv.style.background = "#eef2ff";
+                if (emailFeedbackDiv.innerHTML.includes("Please enter")) emailFeedbackDiv.innerHTML = "✅ Ready — hours will be submitted via email";
+            }, 2000);
+            return;
+        }
+        const recEmail = recipientEmailInput.value.trim();
+        if (!recEmail || !recEmail.includes('@')) {
+            emailFeedbackDiv.innerHTML = "⚠️ Provide a valid email address (e.g., name@domain.com).";
+            emailFeedbackDiv.style.background = "#ffe6e6";
+            setTimeout(() => {
+                emailFeedbackDiv.style.background = "#eef2ff";
+                if (emailFeedbackDiv.innerHTML.includes("valid email")) emailFeedbackDiv.innerHTML = "✅ Ready — hours will be submitted via email";
+            }, 2500);
+            return;
+        }
+        // compute total to show double-check
+        const total = computeTotalHours();
+        if (total === 0) {
+            if (!confirm("Total hours are 0.00. Do you still want to send this timesheet?")) {
+                emailFeedbackDiv.innerHTML = "⏸️ Sending cancelled. Adjust hours if needed.";
+                setTimeout(() => emailFeedbackDiv.innerHTML = "✅ Ready — hours will be submitted via email", 2000);
+                return;
+            }
+        }
+        sendEmailViaMailto();
+    }
+    
+    // when date picker changes
+    weekStartDateInput.addEventListener('change', onWeekStartDateChange);
+    resetBtn.addEventListener('click', resetAllHours);
+    sendEmailBtn.addEventListener('click', handleSendEmail);
+    
+    // initialize: set up current week Sunday & populate grid
+    initCurrentWeekSunday();
+    
+    // Additional: manual override if employee name missing but app works
+    // On load, also ensure weekStartDateInput syncs with currentSundayDate
+    window.addEventListener('load', () => {
+        // ensure all event listeners attached
+        updateAllTotals();
+        // any existing value adjustments
+        for (let inp of hourInputs) {
+            if (inp && (inp.value === "" || isNaN(parseFloat(inp.value)))) inp.value = "0.00";
+        }
+        updateAllTotals();
+    });
+    
+    // If user manually changes hours, total updates automatically (onHourChange)
+    // Add style for email feedback highlight
+</script>
+</body>
+</html>
